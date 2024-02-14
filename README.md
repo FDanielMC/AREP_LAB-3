@@ -21,7 +21,7 @@ git clone https://github.com/FDanielMC/AREP_LAB-3.git
 ```
 
 ### JAVADOC
-Usando el siguiente comando se genera la documentación del proyecto y para acceder a ella se encuentra en la carpeta targe/site en el archivo index.html: 
+Usando el siguiente comando se genera la documentación del proyecto y para acceder a ella se encuentra en la carpeta targe/site/apidocs en el archivo index.html: 
 ```
 mvn site
 ```
