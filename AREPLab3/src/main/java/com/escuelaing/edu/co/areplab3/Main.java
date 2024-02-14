@@ -17,7 +17,15 @@ public class Main {
 
         // Define the services
         DanielSpark.get("/hola", (message) -> {
-            return "/hola.html";
+            return "/Hola.html";
+        });
+        
+        DanielSpark.get("/mensaje", (message) -> {
+           return "/Mensaje.html"; 
+        });
+        
+        DanielSpark.post("/update", (message) -> {
+           return "<h1>informacion actualizada</h1>"; 
         });
 
         try {

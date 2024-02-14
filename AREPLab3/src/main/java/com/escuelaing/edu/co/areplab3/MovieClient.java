@@ -84,7 +84,7 @@ public class MovieClient {
                 if (readingFirst) {
                     petition = inputLine.split(" ")[1];
                     httpMethod = (inputLine.contains("GET") ? "GET"
-                            : (httpMethod.contains("POST") ? "POST" : ""));
+                            : (inputLine.contains("POST") ? "POST" : ""));
                     readingFirst = false;
                 }
                 if (!in.ready()) {
@@ -100,7 +100,14 @@ public class MovieClient {
                 if (path.contains("/action")) {
                     try {
                         String servicePath = callService(path, httpMethod);
-                        outputLine = PageBody(servicePath, clientSocket.getOutputStream()).replace("{query}", query);
+                        if(httpMethod == "GET"){
+                            outputLine = PageBody(servicePath, clientSocket.getOutputStream()).replace("{query}", query);
+                        }
+                        else if (httpMethod == "POST"){
+                            String header = getOKHeader(TEXT_HTML);
+                            outputLine = header + servicePath;
+                        }
+                        else outputLine = getOKHeader(TEXT_HTML) + "<h1>Petición HTTP no hecha en el programa</h1>";
                     } catch (NullPointerException e) {
                         outputLine = "HTTP/1.1 404 NOT FOUND\r\n"
                                 + "Content-Type: " + "text/html" + "\r\n"
@@ -131,7 +138,6 @@ public class MovieClient {
     private static String callService(String pathService, String httpMethod) throws IOException {
         String calledServiceURI = pathService.substring(7);
         MovieService handlerService = DanielSpark.findHandler(httpMethod, "/" + calledServiceURI.split("/")[1]);
-        System.out.println(handlerService);
         String responseBody = handlerService.handle(pathService);
         return responseBody;
     }
