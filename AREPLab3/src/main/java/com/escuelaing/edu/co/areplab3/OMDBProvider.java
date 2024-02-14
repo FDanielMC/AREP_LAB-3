@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.escuelaing.edu.co.areplab2;
+package com.escuelaing.edu.co.areplab3;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;

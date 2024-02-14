@@ -14,6 +14,6 @@ import java.net.URI;
 @FunctionalInterface
 public interface MovieService {
     
-    public String handle(URI requestURI) throws IOException;
+    public String handle(String pathService) throws IOException;
     
 }

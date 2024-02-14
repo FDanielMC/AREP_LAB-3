@@ -1,4 +1,6 @@
-com\escuelaing\edu\co\areplab2\Cache.class
-com\escuelaing\edu\co\areplab2\MovieClient.class
-com\escuelaing\edu\co\areplab2\Main.class
-com\escuelaing\edu\co\areplab2\OMDBProvider.class
+com\escuelaing\edu\co\areplab3\DanielSpark.class
+com\escuelaing\edu\co\areplab3\Main.class
+com\escuelaing\edu\co\areplab3\service\MovieService.class
+com\escuelaing\edu\co\areplab3\Cache.class
+com\escuelaing\edu\co\areplab3\MovieClient.class
+com\escuelaing\edu\co\areplab3\OMDBProvider.class

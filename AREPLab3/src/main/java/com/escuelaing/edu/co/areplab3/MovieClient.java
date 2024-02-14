@@ -1,5 +1,6 @@
 package com.escuelaing.edu.co.areplab3;
 
+import com.escuelaing.edu.co.areplab3.service.MovieService;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.lowagie.text.pdf.PdfReader;
@@ -47,7 +48,8 @@ public class MovieClient {
     /**
      * Constructor de la Clase MovieClient
      */
-    public MovieClient() {}
+    public MovieClient() {
+    }
 
     /**
      * Método para iniciar el servidor.
@@ -74,38 +76,41 @@ public class MovieClient {
             }
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            String inputLine, outputLine;
+            String inputLine, outputLine = "";
             boolean readingFirst = true;
             String petition = "", httpMethod = "";
 
             while ((inputLine = in.readLine()) != null) {
+                System.out.println(inputLine);
                 if (readingFirst) {
                     petition = inputLine.split(" ")[1];
-                    httpMethod = (inputLine.contains("GET") ? "GET" : 
-                            (httpMethod.contains("POST") ? "POST" : ""));
+                    httpMethod = (inputLine.contains("GET") ? "GET"
+                            : (httpMethod.contains("POST") ? "POST" : ""));
                     readingFirst = false;
                 }
                 if (!in.ready()) {
                     break;
                 }
             }
-            
+
             try {
                 URI uri = new URI(petition);
                 String path = uri.getPath();
                 String query = uri.getQuery();
                 query = (query != null ? query.split("=")[1] : "");
-                if(path.contains("/action")){
-                    
+                if (path.contains("/action")) {
+                    String servicePath = callService(path, httpMethod);
+                    outputLine = PageBody(servicePath, clientSocket.getOutputStream());
+                } else {
+                    outputLine = (path.contains("/movies")) ? moviePage(query, clientSocket.getOutputStream()) :  PageBody(path, clientSocket.getOutputStream());
                 }
+
             } catch (URISyntaxException ex) {
+
                 Logger.getLogger(MovieClient.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
-            
-            outputLine = (petition.startsWith("/movies")) ? moviePage(petition.replace("/movies?name=", "")) : PageBody(petition, clientSocket.getOutputStream());
 
-            System.out.println("Movie:");
+            System.out.println(outputLine);
             out.println(outputLine);
             out.close();
             in.close();
@@ -114,8 +119,13 @@ public class MovieClient {
 
         serverSocket.close();
     }
-    
-    
+
+    private static String callService(String pathService, String httpMethod) throws IOException {
+        String calledServiceURI = pathService.substring(7);
+        MovieService handlerService = DanielSpark.findHandler(httpMethod, pathService);
+        String responseBody = handlerService.handle(pathService);
+        return responseBody;
+    }
 
     /**
      * Retorna un HTML con la película que se quiera buscar.
@@ -123,7 +133,7 @@ public class MovieClient {
      * @param name Nombre de la película
      * @return una estructura HTML con información de la película y encabezados
      */
-    private static String moviePage(String name) {
+    private static String moviePage(String name, OutputStream op) {
         try {
             JsonObject resp = omdbProvider.searchMovie(name);
             JsonElement poster, title, released, genre, director, actors,
@@ -136,7 +146,7 @@ public class MovieClient {
             actors = resp.get("Actors");
             language = resp.get("Language");
             plot = resp.get("Plot");
-            String bodyFile = getBodyFile("/MoviePage.html").replace("{Poster}", poster.getAsString())
+            String bodyFile = getBodyFile("/MoviePage.html", op).replace("{Poster}", poster.getAsString())
                     .replace("{Title}", title.getAsString()).replace("{Released}", released.getAsString())
                     .replace("{Genre}", genre.getAsString()).replace("{Director}", director.getAsString())
                     .replace("{Actors}", actors.getAsString()).replace("{Language", language.getAsString())
@@ -157,50 +167,55 @@ public class MovieClient {
      * Método que devuelve el Buscador de las películas, en caso que se le pida
      * algún archivo tipo .css, .js, .jpg o png retorna el archivo pedido del
      * servidor
+     *
      * @param fileName
      * @param op
      * @return cuerpo del buscador o archivo solicitado
      */
     private static String PageBody(String fileName, OutputStream op) {
         String formatFile = getFormatFile(fileName);
-        String bodyFile = getBodyFile(fileName);
-        String headerPage = "HTTP/1.1 200 OK\r\n" + "Content-Type:" + formatFile
-                + "\r\n" + "\r\n";
-        String bodyPage = "";
+        String headerPage = getOKHeader(formatFile);
+        String bodyFile = getBodyFile(fileName, op);
+        String page = "";
         if (getFormatFile(fileName).startsWith("image")) {
             try {
-                op.write(headerPage.getBytes());
+                op.write(getOKHeader(fileName).getBytes());
                 op.write(getImage(fileName));
             } catch (IOException ex) {
                 Logger.getLogger(MovieClient.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
-            bodyPage = headerPage + bodyFile;
+            // Si es otro tipo de archivo, retornamos el encabezado HTTP y el contenido del archivo
+            page = headerPage + bodyFile;
         }
-        return bodyPage;
+        return page;
     }
 
     /**
-     * Método que retorna el Content-type, según el archivo. Así se puede generar
-     * correctamente el encabezado HTTP
+     * Método que retorna el Content-type, según el archivo. Así se puede
+     * generar correctamente el encabezado HTTP
+     *
      * @param fileName
-     * @return 
+     * @return
      */
     public static String getFormatFile(String fileName) {
         String formatFile = (fileName.endsWith("/") || fileName.endsWith(".html")
-                ? "text/html" : (fileName.endsWith(".css")) ? "text/css"
-                : (fileName.endsWith(".js")) ? "text/javascript" : (fileName.endsWith(".jpg")
-                || fileName.endsWith(".jpeg")) ? "image/jpeg" : (fileName.endsWith(".png"))
-                ? "image/png" : (fileName.endsWith(".pdf")) ? "application/pdf" : "text/plain");
+                ? TEXT_HTML : (fileName.endsWith(".css")) ? TEXT_CSS
+                : (fileName.endsWith(".js")) ? APPLICATION_JAVASCRIPT
+                : (fileName.endsWith(".jpg")) ? IMAGE_JPG
+                : (fileName.endsWith(".jpeg")) ? IMAGE_JPEG
+                : (fileName.endsWith(".png")) ? IMAGE_PNG
+                : TEXT_PLAIN);
         return formatFile;
     }
 
     /**
-     * Método que retorna el archivo en formato de texto plano. 
+     * Método que retorna el archivo en formato de texto plano.
+     *
      * @param fileName
-     * @return 
+     * @return
      */
-    private static String getBodyFile(String fileName) {
+    private static String getBodyFile(String fileName, OutputStream op) {
         Path file = (fileName.equals("/")) ? Paths.get("src/resources/public/Browser.html")
                 : Paths.get("src/resources/public" + fileName);
         StringBuilder outputLine = new StringBuilder();
@@ -210,20 +225,22 @@ public class MovieClient {
             while ((line = reader.readLine()) != null) {
                 outputLine.append(line).append("\n");
             }
+
         } catch (Exception e) {
             System.err.format("IOException: " + e.getMessage(), e);
         }
 
         return outputLine.toString();
     }
-    
+
     /**
-     * Método que retorna la imágen en un arreglo de enteros, de manera que la 
+     * Método que retorna la imágen en un arreglo de enteros, de manera que la
      * longitud de este arreglo es el tamaño de la imágen
+     *
      * @param pathFile
-     * @return 
+     * @return
      */
-    public static byte[] getImage(String pathFile){
+    public static byte[] getImage(String pathFile) {
         Path file = Paths.get("src/resources/public" + pathFile);
         byte[] imageData = null;
         try {
@@ -233,15 +250,21 @@ public class MovieClient {
         }
         return imageData;
     }
-    
-    public static MovieClient getInstance(){
-        if(instance == null){
+
+    public static MovieClient getInstance() {
+        if (instance == null) {
             instance = new MovieClient();
         }
         return instance;
     }
-    
-    public static void setStaticFileLocation(String path){
+
+    public static String getOKHeader(String formatFile) {
+        String header = "HTTP/1.1 200 OK\r\n" + "Content-Type:" + formatFile
+                + "\r\n" + "\r\n";
+        return header;
+    }
+
+    public static void setStaticFileLocation(String path) {
         URIStaticFileBase = path;
     }
 }
