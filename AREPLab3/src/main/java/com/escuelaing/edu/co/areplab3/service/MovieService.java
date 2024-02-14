@@ -8,8 +8,8 @@ import java.io.IOException;
 import java.net.URI;
 
 /**
- *
- * @author moren
+ * Interfaz funcional para poder realizar la función lambda
+ * @author Daniel Fernando Moreno Cerón
  */
 @FunctionalInterface
 public interface MovieService {

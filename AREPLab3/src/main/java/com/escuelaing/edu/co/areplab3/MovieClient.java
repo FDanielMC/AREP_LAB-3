@@ -100,14 +100,14 @@ public class MovieClient {
                 if (path.contains("/action")) {
                     try {
                         String servicePath = callService(path, httpMethod);
-                        if(httpMethod == "GET"){
+                        if (httpMethod == "GET") {
                             outputLine = PageBody(servicePath, clientSocket.getOutputStream()).replace("{query}", query);
-                        }
-                        else if (httpMethod == "POST"){
+                        } else if (httpMethod == "POST") {
                             String header = getOKHeader(TEXT_HTML);
                             outputLine = header + servicePath;
+                        } else {
+                            outputLine = getOKHeader(TEXT_HTML) + "<h1>Petición HTTP no hecha en el programa</h1>";
                         }
-                        else outputLine = getOKHeader(TEXT_HTML) + "<h1>Petición HTTP no hecha en el programa</h1>";
                     } catch (NullPointerException e) {
                         outputLine = "HTTP/1.1 404 NOT FOUND\r\n"
                                 + "Content-Type: " + "text/html" + "\r\n"
@@ -120,8 +120,8 @@ public class MovieClient {
 
             } catch (URISyntaxException ex) {
                 outputLine = "HTTP/1.1 404 NOT FOUND\r\n"
-                                + "Content-Type: " + "text/html" + "\r\n"
-                                + "\r\n" + getBodyFile("/Error.html", clientSocket.getOutputStream());
+                        + "Content-Type: " + "text/html" + "\r\n"
+                        + "\r\n" + getBodyFile("/Error.html", clientSocket.getOutputStream());
                 Logger.getLogger(MovieClient.class.getName()).log(Level.SEVERE, null, ex);
             }
 
@@ -135,7 +135,15 @@ public class MovieClient {
         serverSocket.close();
     }
 
-    private static String callService(String pathService, String httpMethod) throws IOException {
+    /**
+     * Método encargado de obtener el servicio según el servicio requerido.
+     *
+     * @param pathService
+     * @param httpMethod
+     * @return
+     * @throws IOException
+     */
+    public static String callService(String pathService, String httpMethod) throws IOException {
         String calledServiceURI = pathService.substring(7);
         MovieService handlerService = DanielSpark.findHandler(httpMethod, "/" + calledServiceURI.split("/")[1]);
         String responseBody = handlerService.handle(pathService);
@@ -145,10 +153,11 @@ public class MovieClient {
     /**
      * Retorna un HTML con la película que se quiera buscar.
      *
-     * @param name Nombre de la película
-     * @return una estructura HTML con información de la película y encabezados
+     * @param name
+     * @param op
+     * @return
      */
-    private static String moviePage(String name, OutputStream op) {
+    public static String moviePage(String name, OutputStream op) {
         try {
             JsonObject resp = omdbProvider.searchMovie(name);
             JsonElement poster, title, released, genre, director, actors,
@@ -185,9 +194,9 @@ public class MovieClient {
      *
      * @param fileName
      * @param op
-     * @return cuerpo del buscador o archivo solicitado
+     * @return
      */
-    private static String PageBody(String fileName, OutputStream op) {
+    public static String PageBody(String fileName, OutputStream op) {
         String formatFile = getFormatFile(fileName);
         String headerPage = getOKHeader(formatFile);
         String bodyFile = getBodyFile(fileName, op);
@@ -228,9 +237,10 @@ public class MovieClient {
      * Método que retorna el archivo en formato de texto plano.
      *
      * @param fileName
+     * @param op
      * @return
      */
-    private static String getBodyFile(String fileName, OutputStream op) {
+    public static String getBodyFile(String fileName, OutputStream op) {
         Path file = (fileName.equals("/")) ? Paths.get(URIStaticFileBase + "/Browser.html")
                 : Paths.get(URIStaticFileBase + fileName);
         StringBuilder outputLine = new StringBuilder();
@@ -266,6 +276,10 @@ public class MovieClient {
         return imageData;
     }
 
+    /**
+     * Método para obtener la única instancia de MovieClient (Patrón Singleton)
+     * @return 
+     */
     public static MovieClient getInstance() {
         if (instance == null) {
             instance = new MovieClient();
@@ -273,16 +287,29 @@ public class MovieClient {
         return instance;
     }
 
+    /**
+     * Método que retorna el encabezado HTTP según su Content-type
+     * @param formatFile
+     * @return 
+     */
     public static String getOKHeader(String formatFile) {
         String header = "HTTP/1.1 200 OK\r\n" + "Content-Type:" + formatFile
                 + "\r\n" + "\r\n";
         return header;
     }
 
+    /**
+     * Método que retorna si el programa se está corriendo
+     * @return 
+     */
     public static boolean getRunning() {
         return running;
     }
 
+    /**
+     * Método que cambia el path de los recursos del servidor
+     * @param path 
+     */
     public static void setStaticFileLocation(String path) {
         URIStaticFileBase = path;
     }

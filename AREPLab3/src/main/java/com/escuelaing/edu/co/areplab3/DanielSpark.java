@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
+ * Clase encargada para manejar las rutas de los servicios
  * @author moren
  */
 public class DanielSpark {
@@ -20,6 +20,10 @@ public class DanielSpark {
     
     private DanielSpark(){}
     
+    /**
+     * Método encargado para obtener una única instancia de la clase.
+     * @return 
+     */
     public static DanielSpark getInstance(){
         if(instance == null){
             instance = new DanielSpark();
@@ -27,18 +31,38 @@ public class DanielSpark {
         return instance;
     }
     
+    /**
+     * Método encargado de setear la ubicación de los recursos
+     * @param path 
+     */
     public static void staticFileLocation(String path){
         MovieClient.getInstance().setStaticFileLocation(path);
     }
     
+    /**
+     * Método encargado de PONER los recursos pedidos por petición GET
+     * @param pathService
+     * @param handler 
+     */
     public static void get(String pathService, MovieService handler){
         getInstance().getServices.put(pathService, handler);
     }
     
+    /**
+     * Método encargado de PONER los recursos pedidos por petición GET
+     * @param pathService
+     * @param handler 
+     */
     public static void post(String pathService, MovieService handler){
         getInstance().postServices.put(pathService, handler);
     }
     
+    /**
+     * Método encargado de OBTENER los recursos pedidos por petición GET
+     * @param httpMethod
+     * @param pathService
+     * @return 
+     */
     public static MovieService findHandler(String httpMethod, String pathService){
         if("GET".equalsIgnoreCase(httpMethod)){
             return getInstance().getServices.get(pathService);

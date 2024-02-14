@@ -80,7 +80,7 @@ public class OMDBProvider {
      * @throws IOException Si no encuentra la URL
      * @return retorna la información de la película en formato String 
      */ 
-    private String executeGetRequest(String apiUrl) throws IOException {
+    public String executeGetRequest(String apiUrl) throws IOException {
         URL url = new URL(apiUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
