@@ -81,7 +81,6 @@ public class MovieClient {
             String petition = "", httpMethod = "";
 
             while ((inputLine = in.readLine()) != null) {
-                System.out.println(inputLine);
                 if (readingFirst) {
                     petition = inputLine.split(" ")[1];
                     httpMethod = (inputLine.contains("GET") ? "GET"
@@ -99,14 +98,23 @@ public class MovieClient {
                 String query = uri.getQuery();
                 query = (query != null ? query.split("=")[1] : "");
                 if (path.contains("/action")) {
-                    String servicePath = callService(path, httpMethod);
-                    outputLine = PageBody(servicePath, clientSocket.getOutputStream());
+                    try {
+                        String servicePath = callService(path, httpMethod);
+                        outputLine = PageBody(servicePath, clientSocket.getOutputStream()).replace("{query}", query);
+                    } catch (NullPointerException e) {
+                        outputLine = "HTTP/1.1 404 NOT FOUND\r\n"
+                                + "Content-Type: " + "text/html" + "\r\n"
+                                + "\r\n" + getBodyFile("/Error.html", clientSocket.getOutputStream());
+                        Logger.getLogger(MovieClient.class.getName()).log(Level.SEVERE, null, e);
+                    }
                 } else {
-                    outputLine = (path.contains("/movies")) ? moviePage(query, clientSocket.getOutputStream()) :  PageBody(path, clientSocket.getOutputStream());
+                    outputLine = (path.contains("/movies")) ? moviePage(query, clientSocket.getOutputStream()) : PageBody(path, clientSocket.getOutputStream());
                 }
 
             } catch (URISyntaxException ex) {
-
+                outputLine = "HTTP/1.1 404 NOT FOUND\r\n"
+                                + "Content-Type: " + "text/html" + "\r\n"
+                                + "\r\n" + getBodyFile("/Error.html", clientSocket.getOutputStream());
                 Logger.getLogger(MovieClient.class.getName()).log(Level.SEVERE, null, ex);
             }
 
@@ -122,7 +130,8 @@ public class MovieClient {
 
     private static String callService(String pathService, String httpMethod) throws IOException {
         String calledServiceURI = pathService.substring(7);
-        MovieService handlerService = DanielSpark.findHandler(httpMethod, pathService);
+        MovieService handlerService = DanielSpark.findHandler(httpMethod, "/" + calledServiceURI.split("/")[1]);
+        System.out.println(handlerService);
         String responseBody = handlerService.handle(pathService);
         return responseBody;
     }
@@ -216,8 +225,8 @@ public class MovieClient {
      * @return
      */
     private static String getBodyFile(String fileName, OutputStream op) {
-        Path file = (fileName.equals("/")) ? Paths.get("src/resources/public/Browser.html")
-                : Paths.get("src/resources/public" + fileName);
+        Path file = (fileName.equals("/")) ? Paths.get(URIStaticFileBase + "/Browser.html")
+                : Paths.get(URIStaticFileBase + fileName);
         StringBuilder outputLine = new StringBuilder();
         Charset charset = Charset.forName("UTF-8");
         try (BufferedReader reader = Files.newBufferedReader(file, charset)) {
@@ -262,6 +271,10 @@ public class MovieClient {
         String header = "HTTP/1.1 200 OK\r\n" + "Content-Type:" + formatFile
                 + "\r\n" + "\r\n";
         return header;
+    }
+
+    public static boolean getRunning() {
+        return running;
     }
 
     public static void setStaticFileLocation(String path) {
