@@ -1,4 +1,4 @@
-# LABORATORIO #2:  MICROFRAMEWORKS WEB
+# LABORATORIO #3:  MICROFRAMEWORKS WEB
 
 En este taller usted debe explorar la arquitectura del microframework WEB denominado sparkweb (https://sparkjava.com/). Este micro framework permite construir aplicaciones web de manera simple usando funciones lambda.
 
@@ -61,3 +61,57 @@ mvn test
 Se agregó una nueva clase encargada de manejar las rutas de los servicios que pidan, ya sea por petición GET o POST. A su vez se modifico la clase MovieClient para que mediante la nueva opción de los registros lambda se pueda acceder a los servicios según la ruta del servicio. Además, soporta consultas de la URI. De manera que se muestra en la página.
 
 ### Casos de Prueba
+
+  ## Caso de Prueba: Buscar los recursos
+  * ingresar a la URL http://localhost:35000/action/(recurso) 
+      - Entre los recursos están /action/hola y /action/mensaje:
+    
+![image](https://github.com/FDanielMC/AREP_LAB-3/assets/123689924/6c9423dc-462e-4fa4-82d7-a1a16a7a6b91)
+
+![image](https://github.com/FDanielMC/AREP_LAB-3/assets/123689924/553a2842-6709-425f-bb97-2b7f5fe83c33)
+
+  * En caso que no esté el recurso o no se busque ningún recurso saldrá la página de error 404:
+
+
+![image](https://github.com/FDanielMC/AREP_LAB-3/assets/123689924/5d3c45d0-0b91-4224-b69f-1517fffa42e7)
+
+![image](https://github.com/FDanielMC/AREP_LAB-3/assets/123689924/8f0825fe-113e-4f59-bf11-d69044f5ebe7)
+
+  ## Caso de Prueba: Uso de parámetros en los recursos
+  * A su vez se puede ingresar parámetros en los recursos para poder interactuar con la página de cada recurso:
+
+![image](https://github.com/FDanielMC/AREP_LAB-3/assets/123689924/c5b2fb2c-0f3d-40ba-83bd-e6f7f20c1804)
+
+![image](https://github.com/FDanielMC/AREP_LAB-3/assets/123689924/394f3523-1787-40c8-a720-8fa0a61e2ad7)
+
+![image](https://github.com/FDanielMC/AREP_LAB-3/assets/123689924/cea8296b-43cc-4769-8182-f00fd668abb7)
+
+![image](https://github.com/FDanielMC/AREP_LAB-3/assets/123689924/43ed16ec-1ad2-4d81-bb89-5c823549b8ef)
+
+  ## Caso de Prueba: Uso de POST
+  * Mediante Postman se hará la prueba, así ver que la aplicación también recibe peticios HTTP del tipo POST:
+      - Por ahora el único recurso que recibe peticiones del tipo POST es /action/update y en caso de que el recurso no esté saldrá la página de error. 
+
+![image](https://github.com/FDanielMC/AREP_LAB-3/assets/123689924/0e58b30c-2e27-45e9-a726-163606f98e2b)
+
+![image](https://github.com/FDanielMC/AREP_LAB-3/assets/123689924/ce08fae5-a180-41fa-9e8b-b250894c7210)
+
+## DESARROLLADO CON
+
+* [Java version 15 (Netbeans JDK 15)](https://www.oracle.com/co/java/technologies/downloads/)
+* [Maven](https://maven.apache.org/download.cgi)
+* [Git](https://git-scm.com/downloads)
+* [omdbapi](https://www.omdbapi.com)
+
+## Autor
+
+* **Daniel Fernando Moreno Cerón** - [FDanielMC](https://github.com/FDanielMC)
+
+### Licencia
+
+This project is licensed under the MIT License - see the LICENSE.md file for details
+
+### Agradecimientos
+
+Escuela Colombiana de Ingeniería
+
