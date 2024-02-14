@@ -98,27 +98,21 @@ public class MovieClient {
                 String query = uri.getQuery();
                 query = (query != null ? query.split("=")[1] : "");
                 if (path.contains("/action")) {
-                    try {
-                        String servicePath = callService(path, httpMethod);
-                        if (httpMethod == "GET") {
-                            outputLine = PageBody(servicePath, clientSocket.getOutputStream()).replace("{query}", query);
-                        } else if (httpMethod == "POST") {
-                            String header = getOKHeader(TEXT_HTML);
-                            outputLine = header + servicePath;
-                        } else {
-                            outputLine = getOKHeader(TEXT_HTML) + "<h1>Petición HTTP no hecha en el programa</h1>";
-                        }
-                    } catch (NullPointerException e) {
-                        outputLine = "HTTP/1.1 404 NOT FOUND\r\n"
-                                + "Content-Type: " + "text/html" + "\r\n"
-                                + "\r\n" + getBodyFile("/Error.html", clientSocket.getOutputStream());
-                        Logger.getLogger(MovieClient.class.getName()).log(Level.SEVERE, null, e);
+                    String servicePath = callService(path, httpMethod, clientSocket.getOutputStream());
+                    if (httpMethod == "GET") {
+                        outputLine = PageBody(servicePath, clientSocket.getOutputStream()).replace("{query}", query);
+                    } else if (httpMethod == "POST") {
+                        String header = getOKHeader(TEXT_HTML);
+                        outputLine = header + servicePath;
+                    } else {
+                        outputLine = getOKHeader(TEXT_HTML) + "<h1>Petición HTTP no hecha en el programa</h1>";
                     }
+
                 } else {
                     outputLine = (path.contains("/movies")) ? moviePage(query, clientSocket.getOutputStream()) : PageBody(path, clientSocket.getOutputStream());
                 }
 
-            } catch (URISyntaxException ex) {
+            } catch (Exception ex) {
                 outputLine = "HTTP/1.1 404 NOT FOUND\r\n"
                         + "Content-Type: " + "text/html" + "\r\n"
                         + "\r\n" + getBodyFile("/Error.html", clientSocket.getOutputStream());
@@ -143,7 +137,7 @@ public class MovieClient {
      * @return
      * @throws IOException
      */
-    public static String callService(String pathService, String httpMethod) throws IOException {
+    public static String callService(String pathService, String httpMethod, OutputStream op) throws IOException {
         String calledServiceURI = pathService.substring(7);
         MovieService handlerService = DanielSpark.findHandler(httpMethod, "/" + calledServiceURI.split("/")[1]);
         String responseBody = handlerService.handle(pathService);
@@ -278,7 +272,8 @@ public class MovieClient {
 
     /**
      * Método para obtener la única instancia de MovieClient (Patrón Singleton)
-     * @return 
+     *
+     * @return
      */
     public static MovieClient getInstance() {
         if (instance == null) {
@@ -289,8 +284,9 @@ public class MovieClient {
 
     /**
      * Método que retorna el encabezado HTTP según su Content-type
+     *
      * @param formatFile
-     * @return 
+     * @return
      */
     public static String getOKHeader(String formatFile) {
         String header = "HTTP/1.1 200 OK\r\n" + "Content-Type:" + formatFile
@@ -300,7 +296,8 @@ public class MovieClient {
 
     /**
      * Método que retorna si el programa se está corriendo
-     * @return 
+     *
+     * @return
      */
     public static boolean getRunning() {
         return running;
@@ -308,7 +305,8 @@ public class MovieClient {
 
     /**
      * Método que cambia el path de los recursos del servidor
-     * @param path 
+     *
+     * @param path
      */
     public static void setStaticFileLocation(String path) {
         URIStaticFileBase = path;
